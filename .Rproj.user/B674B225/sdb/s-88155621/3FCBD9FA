@@ -1,0 +1,17 @@
+{
+    "contents" : "library(corrplot)\ncor<- cor(train[, -54])\ncorrplot(cor, order = \"FPC\", method = \"color\", type = \"lower\", tl.cex = 0.8, tl.col = rgb(0, 0, 0))\n",
+    "created" : 1424636049293.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "3331037270",
+    "id" : "3FCBD9FA",
+    "lastKnownWriteTime" : 176093659136,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled3"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

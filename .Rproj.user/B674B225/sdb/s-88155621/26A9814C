@@ -1,0 +1,17 @@
+{
+    "contents" : "modelFin <- randomForest(classe ~ ., data = trainTr, ntree = 500)\nfin_predict <- predict(modelFin, raw_test)\n\n\n\npml_write_files = function(x){\n  n = length(x)\n  for(i in 1:n){\n    filename = paste0(\"problem_id_\",i,\".txt\")\n    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)\n  }\n}\n\n\nsetwd('answer_files/')\npml_write_files(fin_predict)\n",
+    "created" : 1424648999447.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "1223270121",
+    "id" : "26A9814C",
+    "lastKnownWriteTime" : 399431958573,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled4"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

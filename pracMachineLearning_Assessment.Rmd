@@ -1,0 +1,162 @@
+---
+title: "Predictive Model for Excercise"
+author: "Erich Donahue"
+date: "02/22/2015"
+output: html_document
+---
+
+Introduction
+------------------------
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here:
+
+http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+
+
+
+The five barbell lifting methods are:
+
+- **A:** Correct execution
+- **B:** Throwing the elbows to the front
+- **C:** Lifting the dumbell only halfway
+- **D:** Lowering the dumbell only halfway
+- **E:** Throwing the hips to the front
+
+We will attempt to build a model that classifies training and test data into one of the five outcomes.
+
+
+
+Data Loading and Exploration
+------------------------
+
+First the data is downloaded from the source and read into data frames:
+
+```{r, message=FALSE}
+library(caret)
+library(ggplot2)
+
+if (!file.exists("train.csv")) {
+  download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", 
+                destfile = "train.csv", method="curl")
+}
+if (!file.exists("test.csv")) {
+  download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", 
+                destfile = "test.csv", method="curl")
+}
+
+raw_train <- read.csv("train.csv", na.strings = c("NA",""))
+raw_test <- read.csv("test.csv", na.strings = c("NA",""))
+```
+
+
+Second, we will examine the structure and output distribution of the sets:
+
+```{r}
+dim(raw_train)
+dim(raw_test)
+```
+```{r, eval=FALSE} raw_train[1:4,] ```
+```{r}
+table(raw_train$classe)
+```
+
+
+
+
+Data Preparation
+------------------------
+
+Since we want to only learn from data without missing observations we should first test for missings.
+
+```{r}
+comp <- sum(complete.cases(raw_train))
+comp
+```
+
+
+As there are only `r comp` complete observations out of a total `r nrow(raw_train)` records it seems likely that there are some columns which are sparsely populated.
+
+The following code tests for and removes columns with any missing values:
+```{r}
+badCols <- sapply(raw_train, function(x)any(is.na(x)))
+table(badCols)
+
+goodCols<- names(badCols[badCols==FALSE])
+train <- raw_train[, names(raw_train) %in% goodCols]
+```
+
+
+Finally, there are some columns which do not provide estimation value, intended for meta analysis of users and configuration.  These are removed to further refine the training data:
+
+```{r}
+train <- train[, !(names(train) %in% list("X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window"))]
+```
+
+
+
+
+Model Development
+------------------------
+
+Before fitting a model, I've split the train dataset into subtraining and validation components:
+
+```{r}
+intrain <- createDataPartition(train$classe, p = 0.7, list = FALSE)
+trainTr <- train[intrain,]
+trainTe <- train[-intrain,]
+```
+
+A model is trained using radom forest on the sub-training set.  Random forests can take a set with no pre-defined parameters, and with enough trees and processing power fit a model with reduced risk of overfitting.  Random forests also have the helpful feature of providing information on the importance of variables within the model.  The method below fits the sub-training set on classe with a relatively robust, 500, number of trees.
+
+
+
+```{r, message=FALSE}
+library(randomForest)
+set.seed(4252015)
+model <- randomForest(classe ~ ., data = trainTr, ntree = 500)
+```
+
+Our model demonstrates a relatively low level for the out of bag estimate, at 0.22%.  The initial confusion matrix shows a near-perfect fit on the sub-training set.
+
+```{r}
+model
+confus <-  data.frame(model$confusion)
+acc <- sum(confus$class.error)
+```
+
+A high accuracy value is seen at `r 100 - acc`%.
+
+
+
+To further test the model's predictive power we can test using the sub-validation set:
+```{r}
+tr_pred <- predict(model, trainTr) 
+te_pred <- predict(model, trainTe)
+table(tr_pred, trainTr$classe)
+table(te_pred, trainTe$classe)
+```
+
+The model demonstrates perfect prediciton on the sub-training set with a relatively accurate prediction on the validation set.
+
+Using the importance feature we can visualize the impacts of the 54 predictors in the model.  While many variables show a similar level of importance there are a few standouts.  Further reserarch may help to identify the relationship these represent.
+
+```{r}
+import <- varImp(model)
+import$var <- row.names(import)
+qplot(var, Overall, data=import)
+```
+
+
+Finally, we re-run a random forest on the full training set, to allow for predictions on the supplied test sample.
+
+```{r}
+modelFin <- randomForest(classe ~ ., data = trainTr, ntree = 500)
+fin_predict <- predict(modelFin, raw_test)
+fin_predict
+```
+
+
+
+Conclusion
+------------------------
+While the model seems accurate by many measures further investigation may help to reveal the relationships at work.  Since the important measure shows some clear standouts it may be useful to see if a simpler model can be developed to save processing overhead.  Alternatively, increasing the number of trees used or using a different learning approach could help to refine the predictive capability.

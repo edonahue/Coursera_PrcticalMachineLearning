@@ -1,0 +1,17 @@
+{
+    "contents" : "library(caret)\nlibrary(ggplot2)\n\nif (!file.exists(\"train.csv\")) {\n  download.file(\"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv\", \n                destfile = \"train.csv\", method=\"curl\")\n}\nif (!file.exists(\"test.csv\")) {\n  download.file(\"https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv\", \n                destfile = \"test.csv\", method=\"curl\")\n}\n\nraw_train <- read.csv(\"train.csv\", na.strings = c(\"NA\",\"\"))\nraw_test <- read.csv(\"test.csv\", na.strings = c(\"NA\",\"\"))\n\ndim(raw_train)\ndim(raw_test)\nraw_train[1:4,]\ntable(raw_train$classe)\n\nsum(complete.cases(raw_train))\n\n\nbadCols <- sapply(raw_train, function(x)any(is.na(x)))\nsum(badCols)\ntable(badCols)\n\ngoodCols<- names(badCols[badCols==FALSE])\ntrain <- raw_train[, names(raw_train) %in% goodCols]\ntrain <- train[, !(names(train) %in% list(\"X\", \"user_name\", \"raw_timestamp_part_1\", \"raw_timestamp_part_2\", \"cvtd_timestamp\", \"new_window\"))]\n\n\n",
+    "created" : 1424632270741.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "131098009",
+    "id" : "DF6E1DD5",
+    "lastKnownWriteTime" : 6,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

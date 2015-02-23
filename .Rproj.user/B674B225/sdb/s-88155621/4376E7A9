@@ -1,0 +1,17 @@
+{
+    "contents" : "# intrain <- createDataPartition(train$classe, p = 0.7, list = FALSE)\n# trainTr <- train[intrain,]\n# trainTe <- train[-intrain,]\n\n\nlibrary(randomForest)\nset.seed(4252015)\nmodel <- randomForest(classe ~ ., data = trainTr, ntree = 500)\n\ntr_pred <- predict(model, trainTr) \nte_pred <- predict(model, trainTe)\ntable(tr_pred, trainTe$classe)\n\ntable(te_pred, trainTe$classe)\n\n\n\nvarImpPlot(model, sort = TRUE, type = 1, pch = 19, col = 1, cex = 1, main = \"Importance of the Individual Principal Components\")\n\n\n\nimport <- varImp(model)\nimport$var <- row.names(imp)\nimport <- imp[order(imp$Overall, decreasing = T),]\nqplot(var, Overall, data=import)\n",
+    "created" : 1424635178475.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "774680927",
+    "id" : "4376E7A9",
+    "lastKnownWriteTime" : 4705733982998765600,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled2"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
